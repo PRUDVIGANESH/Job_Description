@@ -2,15 +2,17 @@
 import React from 'react';
 import type { Job } from '../../data/jobs';
 import { MapPin, Briefcase, Clock, Bookmark, ExternalLink, Eye, Building2, IndianRupee } from 'lucide-react';
+import { getScoreColor } from '../../utils/scoring';
 
 interface JobCardProps {
     job: Job;
+    matchScore?: number;
     isSaved: boolean;
     onToggleSave: (id: string) => void;
     onView: (job: Job) => void;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job, isSaved, onToggleSave, onView }) => {
+const JobCard: React.FC<JobCardProps> = ({ job, matchScore, isSaved, onToggleSave, onView }) => {
     return (
         <div className="group bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all duration-300 hover:border-gray-200 relative animate-fade-in">
             <div className="flex justify-between items-start mb-3">
@@ -25,12 +27,20 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSaved, onToggleSave, onView })
                         <p className="text-sm text-gray-500 font-medium">{job.company}</p>
                     </div>
                 </div>
-                <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full border ${job.source === 'LinkedIn' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                    job.source === 'Naukri' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
-                        'bg-indigo-50 text-indigo-700 border-indigo-100'
-                    }`}>
-                    {job.source}
-                </span>
+
+                <div className="flex flex-col items-end gap-1">
+                    <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full border ${job.source === 'LinkedIn' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                            job.source === 'Naukri' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                'bg-indigo-50 text-indigo-700 border-indigo-100'
+                        }`}>
+                        {job.source}
+                    </span>
+                    {matchScore !== undefined && matchScore > 0 && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${getScoreColor(matchScore)}`}>
+                            {matchScore}% Match
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm text-gray-600">

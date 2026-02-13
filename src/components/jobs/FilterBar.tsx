@@ -11,6 +11,11 @@ interface FilterBarProps {
     setModeFilter: (mode: string) => void;
     experienceFilter: string;
     setExperienceFilter: (exp: string) => void;
+    showMatchesOnly: boolean;
+    setShowMatchesOnly: (show: boolean) => void;
+    sortBy: string;
+    setSortBy: (sort: string) => void;
+    hasPreferences: boolean;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -21,13 +26,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
     modeFilter,
     setModeFilter,
     experienceFilter,
-    setExperienceFilter
+    setExperienceFilter,
+    showMatchesOnly,
+    setShowMatchesOnly,
+    sortBy,
+    setSortBy,
+    hasPreferences
 }) => {
     return (
-        <div className="bg-white p-4 rounded-xl border border-border shadow-sm mb-6 space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+        <div className="bg-white p-4 rounded-xl border border-border shadow-sm mb-6 space-y-4 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
 
             {/* Search */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                     type="text"
@@ -39,7 +49,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </div>
 
             {/* Filters Group */}
-            <div className="flex flex-wrap gap-2 md:flex-nowrap">
+            <div className="flex flex-wrap gap-2 items-center">
                 <select
                     value={locationFilter}
                     onChange={(e) => setLocationFilter(e.target.value)}
@@ -79,10 +89,36 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     <option value="3-5 Years">3-5 Years</option>
                 </select>
 
-                <button className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                    <ArrowUpDown className="h-4 w-4" />
-                    <span className="hidden sm:inline">Latest</span>
-                </button>
+                <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block"></div>
+
+                {/* Sort */}
+                <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
+                    </div>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
+                    >
+                        <option value="Latest">Latest</option>
+                        <option value="Score">Match Score</option>
+                        <option value="Salary">Salary</option>
+                    </select>
+                </div>
+
+                {/* Match Toggle */}
+                {hasPreferences && (
+                    <button
+                        onClick={() => setShowMatchesOnly(!showMatchesOnly)}
+                        className={`px-3 py-2 text-sm border rounded-lg flex items-center gap-2 transition-colors ${showMatchesOnly
+                                ? 'bg-accent text-white border-accent'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                            }`}
+                    >
+                        <span>Only Matches</span>
+                    </button>
+                )}
             </div>
         </div>
     );
