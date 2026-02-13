@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #F7F6F3;
+  --color-text-primary: #111111;
+  --color-text-secondary: #555555;
+  --color-accent: #8B0000;
+  --color-accent-hover: #A50000;
+  --color-white: #FFFFFF;
+  --color-border: #E0E0E0;
+
+  --font-serif: Merriweather, serif;
+  --font-sans: Inter, sans-serif;
+
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 64px;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-text-primary font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif font-bold mb-4;
+    /* using standard spacing or custom if mapped, but standard mb-4 is 1rem */
+  }
+
+  p {
+    @apply max-w-prose mb-4 text-text-secondary;
+  }
+}
