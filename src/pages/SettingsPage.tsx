@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Check } from 'lucide-react';
 import type { UserPreferences } from '../utils/types';
 
@@ -92,8 +91,8 @@ const SettingsPage = () => {
                                 key={mode}
                                 onClick={() => toggleMode(mode)}
                                 className={`px-4 py-2 border rounded-md transition-colors ${prefs.preferredMode.includes(mode)
-                                        ? 'border-accent bg-red-50 text-accent font-medium'
-                                        : 'border-gray-200 text-text-secondary hover:border-accent hover:text-accent'
+                                    ? 'border-accent bg-red-50 text-accent font-medium'
+                                    : 'border-gray-200 text-text-secondary hover:border-accent hover:text-accent'
                                     }`}
                             >
                                 {mode}
