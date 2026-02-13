@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, ChevronDown, CheckSquare, Square } from 'lucide-react';
 import type { UserPreferences } from '../utils/types';
 
 const defaultPreferences: UserPreferences = {
@@ -11,9 +12,14 @@ const defaultPreferences: UserPreferences = {
     minMatchScore: 40
 };
 
+const AVAILABLE_LOCATIONS = [
+    'Bangalore', 'Hyderabad', 'Pune', 'Chennai', 'Gurgaon', 'Noida', 'Mumbai', 'Remote'
+];
+
 const SettingsPage = () => {
     const [prefs, setPrefs] = useState<UserPreferences>(defaultPreferences);
     const [saved, setSaved] = useState(false);
+    const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('jobTrackerPreferences');
@@ -39,6 +45,14 @@ const SettingsPage = () => {
             ? current.filter(m => m !== mode)
             : [...current, mode];
         handleChange('preferredMode', newModes);
+    };
+
+    const toggleLocation = (location: string) => {
+        const current = prefs.preferredLocations;
+        const newLocations = current.includes(location)
+            ? current.filter(l => l !== location)
+            : [...current, location];
+        handleChange('preferredLocations', newLocations);
     };
 
     const handleSave = () => {
@@ -69,17 +83,49 @@ const SettingsPage = () => {
                     />
                 </div>
 
-                {/* Preferred Locations */}
-                <div className="space-y-4">
+                {/* Preferred Locations - Multi-select Dropdown */}
+                <div className="space-y-4 relative">
                     <label className="block text-lg font-medium text-text-primary">Preferred Locations</label>
-                    <p className="text-sm text-text-secondary">Comma-separated (e.g. Bangalore, Mumbai)</p>
-                    <input
-                        type="text"
-                        value={prefs.preferredLocations.join(', ')}
-                        onChange={(e) => handleArrayChange('preferredLocations', e.target.value)}
-                        placeholder="e.g. Bangalore, Hyderabad, Remote"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-accent focus:ring-accent sm:text-sm p-3 border"
-                    />
+                    <p className="text-sm text-text-secondary">Select multiple locations</p>
+
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+                            className="w-full text-left bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
+                        >
+                            <span className="block truncate">
+                                {prefs.preferredLocations.length > 0
+                                    ? prefs.preferredLocations.join(', ')
+                                    : "Select locations..."}
+                            </span>
+                            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <ChevronDown className="h-5 w-5 text-gray-400" />
+                            </span>
+                        </button>
+
+                        {isLocationDropdownOpen && (
+                            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                                {AVAILABLE_LOCATIONS.map((location) => (
+                                    <div
+                                        key={location}
+                                        className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-red-50 text-gray-900`}
+                                        onClick={() => toggleLocation(location)}
+                                    >
+                                        <div className="flex items-center">
+                                            {prefs.preferredLocations.includes(location) ? (
+                                                <CheckSquare className="h-4 w-4 text-accent mr-3" />
+                                            ) : (
+                                                <Square className="h-4 w-4 text-gray-300 mr-3" />
+                                            )}
+                                            <span className={`block truncate ${prefs.preferredLocations.includes(location) ? 'font-semibold' : 'font-normal'}`}>
+                                                {location}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mode */}
@@ -90,11 +136,12 @@ const SettingsPage = () => {
                             <button
                                 key={mode}
                                 onClick={() => toggleMode(mode)}
-                                className={`px-4 py-2 border rounded-md transition-colors ${prefs.preferredMode.includes(mode)
-                                    ? 'border-accent bg-red-50 text-accent font-medium'
-                                    : 'border-gray-200 text-text-secondary hover:border-accent hover:text-accent'
+                                className={`px-4 py-2 border rounded-md transition-colors flex items-center gap-2 ${prefs.preferredMode.includes(mode)
+                                        ? 'border-accent bg-red-50 text-accent font-medium'
+                                        : 'border-gray-200 text-text-secondary hover:border-accent hover:text-accent'
                                     }`}
                             >
+                                {prefs.preferredMode.includes(mode) ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                                 {mode}
                             </button>
                         ))}
