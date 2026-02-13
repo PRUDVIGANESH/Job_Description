@@ -11,7 +11,9 @@ const Navigation: React.FC = () => {
         { path: '/saved', label: 'Saved' },
         { path: '/digest', label: 'Digest' },
         { path: '/settings', label: 'Settings' },
-        { path: '/proof', label: 'Proof' },
+        { path: '/jt/proof', label: 'Proof' },
+        { path: '/jt/07-test', label: 'Test Checklist' },
+        { path: '/jt/08-ship', label: 'Ship' },
     ];
 
     const toggleMenu = () => {

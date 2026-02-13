@@ -11,6 +11,8 @@ interface FilterBarProps {
     setModeFilter: (mode: string) => void;
     experienceFilter: string;
     setExperienceFilter: (exp: string) => void;
+    statusFilter: string;
+    setStatusFilter: (status: string) => void;
     showMatchesOnly: boolean;
     setShowMatchesOnly: (show: boolean) => void;
     sortBy: string;
@@ -27,6 +29,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setModeFilter,
     experienceFilter,
     setExperienceFilter,
+    statusFilter,
+    setStatusFilter,
     showMatchesOnly,
     setShowMatchesOnly,
     sortBy,
@@ -50,6 +54,20 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
             {/* Filters Group */}
             <div className="flex flex-wrap gap-2 items-center">
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent/20"
+                >
+                    <option value="">All Statuses</option>
+                    <option value="Not Applied">Not Applied</option>
+                    <option value="Applied">Applied</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Selected">Selected</option>
+                </select>
+
+                <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block"></div>
+
                 <select
                     value={locationFilter}
                     onChange={(e) => setLocationFilter(e.target.value)}
@@ -112,8 +130,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     <button
                         onClick={() => setShowMatchesOnly(!showMatchesOnly)}
                         className={`px-3 py-2 text-sm border rounded-lg flex items-center gap-2 transition-colors ${showMatchesOnly
-                                ? 'bg-accent text-white border-accent'
-                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                            ? 'bg-accent text-white border-accent'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                             }`}
                     >
                         <span>Only Matches</span>

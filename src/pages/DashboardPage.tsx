@@ -4,7 +4,7 @@ import { jobs, type Job } from '../data/jobs';
 import JobCard from '../components/jobs/JobCard';
 import FilterBar from '../components/jobs/FilterBar';
 import JobModal from '../components/jobs/JobModal';
-import { Layout, AlertCircle } from 'lucide-react';
+import { Layout, AlertCircle, CheckCircle } from 'lucide-react';
 import { calculateMatchScore } from '../utils/scoring';
 import type { UserPreferences } from '../utils/types';
 
@@ -19,23 +19,34 @@ const DashboardPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [prefs, setPrefs] = useState<UserPreferences | null>(null);
     const [showMatchesOnly, setShowMatchesOnly] = useState(false);
-    const [sortBy, setSortBy] = useState('Latest'); // 'Latest', 'Score', 'Salary'
+    const [sortBy, setSortBy] = useState('Latest');
+
+    // Status State
+    const [jobStatus, setJobStatus] = useState<Record<string, string>>({});
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     // Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [modeFilter, setModeFilter] = useState('');
     const [experienceFilter, setExperienceFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+
 
     useEffect(() => {
-        const stored = localStorage.getItem('savedJobs');
-        if (stored) {
-            setSavedJobs(JSON.parse(stored));
+        const storedSaved = localStorage.getItem('savedJobs');
+        if (storedSaved) {
+            setSavedJobs(JSON.parse(storedSaved));
         }
 
         const storedPrefs = localStorage.getItem('jobTrackerPreferences');
         if (storedPrefs) {
             setPrefs(JSON.parse(storedPrefs));
+        }
+
+        const storedStatus = localStorage.getItem('jobTrackerStatus');
+        if (storedStatus) {
+            setJobStatus(JSON.parse(storedStatus));
         }
     }, []);
 
@@ -55,6 +66,16 @@ const DashboardPage = () => {
         setIsModalOpen(true);
     };
 
+    const handleStatusChange = (id: string, newStatus: string) => {
+        const updatedStatus = { ...jobStatus, [id]: newStatus };
+        setJobStatus(updatedStatus);
+        localStorage.setItem('jobTrackerStatus', JSON.stringify(updatedStatus));
+
+        // Show Toast
+        setToastMessage(`Status updated to: ${newStatus}`);
+        setTimeout(() => setToastMessage(null), 3000);
+    };
+
     // Calculate Scores and Filter
     const processedJobs = useMemo(() => {
         let jobList: ScoredJob[] = jobs.map(job => ({
@@ -71,12 +92,16 @@ const DashboardPage = () => {
             const matchesMode = modeFilter ? job.mode === modeFilter : true;
             const matchesExperience = experienceFilter ? job.experience === experienceFilter : true;
 
+            // Status Filter (Default to 'Not Applied' if undefined)
+            const currentStatus = jobStatus[job.id] || 'Not Applied';
+            const matchesStatus = statusFilter ? currentStatus === statusFilter : true;
+
             // Match Score Threshold Filter
             const matchesScore = showMatchesOnly && prefs
                 ? job.matchScore >= prefs.minMatchScore
                 : true;
 
-            return matchesSearch && matchesLocation && matchesMode && matchesExperience && matchesScore;
+            return matchesSearch && matchesLocation && matchesMode && matchesExperience && matchesStatus && matchesScore;
         });
 
         // 2. Sorting
@@ -84,21 +109,25 @@ const DashboardPage = () => {
             if (sortBy === 'Score') {
                 return b.matchScore - a.matchScore;
             } else if (sortBy === 'Salary') {
-                // Simple string sort for now as salary parsing is complex to do perfectly inline
-                // For better results use the parseSalary util if exact numeric sort needed
                 return a.salaryRange.localeCompare(b.salaryRange);
             } else {
-                // Latest (Default) - assume lower postedDaysAgo is newer
                 return a.postedDaysAgo - b.postedDaysAgo;
             }
         });
 
         return jobList;
-    }, [jobs, prefs, searchQuery, locationFilter, modeFilter, experienceFilter, showMatchesOnly, sortBy]);
+    }, [jobs, prefs, searchQuery, locationFilter, modeFilter, experienceFilter, statusFilter, showMatchesOnly, sortBy, jobStatus]);
 
 
     return (
-        <div className="animate-fade-in pb-20">
+        <div className="animate-fade-in pb-20 relative">
+            {toastMessage && (
+                <div className="fixed top-24 right-8 z-50 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in">
+                    <CheckCircle className="h-5 w-5 text-green-400" />
+                    <span className="text-sm font-medium">{toastMessage}</span>
+                </div>
+            )}
+
             <div className="mb-8">
                 <h1 className="text-3xl font-serif font-bold text-text-primary">Dashboard</h1>
                 <p className="text-text-secondary mt-1">
@@ -125,6 +154,8 @@ const DashboardPage = () => {
                 setModeFilter={setModeFilter}
                 experienceFilter={experienceFilter}
                 setExperienceFilter={setExperienceFilter}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
                 showMatchesOnly={showMatchesOnly}
                 setShowMatchesOnly={setShowMatchesOnly}
                 sortBy={sortBy}
@@ -142,6 +173,8 @@ const DashboardPage = () => {
                             isSaved={savedJobs.includes(job.id)}
                             onToggleSave={toggleSave}
                             onView={handleViewJob}
+                            status={jobStatus[job.id] || 'Not Applied'}
+                            onStatusChange={handleStatusChange}
                         />
                     ))}
                 </div>

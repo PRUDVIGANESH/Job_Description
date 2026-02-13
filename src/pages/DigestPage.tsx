@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Mail, Copy, Check, FileText, AlertCircle } from 'lucide-react';
+import { Mail, Copy, Check, FileText, AlertCircle, Activity } from 'lucide-react';
 import { jobs, type Job } from '../data/jobs';
 import { calculateMatchScore, getScoreColor } from '../utils/scoring';
 import type { UserPreferences } from '../utils/types';
@@ -14,6 +14,7 @@ const DigestPage = () => {
     const [prefs, setPrefs] = useState<UserPreferences | null>(null);
     const [generatedDate, setGeneratedDate] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
+    const [statusUpdates, setStatusUpdates] = useState<{ job: Job, status: string }[]>([]);
 
     useEffect(() => {
         // Load preferences
@@ -30,6 +31,23 @@ const DigestPage = () => {
             setDigest(JSON.parse(storedDigest));
             setGeneratedDate(today);
         }
+
+        // Load Status Updates for "Recent Activity"
+        // In a real app, this would be a proper audit log.
+        // For simulation, we'll just show any non-'Not Applied' status from the current status map.
+        const storedStatus = localStorage.getItem('jobTrackerStatus');
+        if (storedStatus) {
+            const statusMap: Record<string, string> = JSON.parse(storedStatus);
+            const updates = Object.entries(statusMap)
+                .filter(([_, status]) => status !== 'Not Applied')
+                .map(([jobId, status]) => {
+                    const job = jobs.find(j => j.id === jobId);
+                    return job ? { job, status } : null;
+                })
+                .filter(item => item !== null) as { job: Job, status: string }[];
+            setStatusUpdates(updates);
+        }
+
     }, []);
 
     const generateDigest = () => {
@@ -117,6 +135,33 @@ const DigestPage = () => {
                     </button>
                 )}
             </div>
+
+            {/* Status Updates Section */}
+            {statusUpdates.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 animate-fade-in">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Activity className="h-5 w-5 text-accent" />
+                        <h3 className="font-serif font-bold text-lg text-gray-900">Recent Status Updates</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {statusUpdates.map(({ job, status }) => (
+                            <div key={job.id} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                                <div>
+                                    <p className="font-medium text-gray-900">{job.title}</p>
+                                    <p className="text-sm text-gray-500">{job.company}</p>
+                                </div>
+                                <span className={`text-xs font-bold px-2 py-1 rounded-full border ${status === 'Applied' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                        status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-100' :
+                                            status === 'Selected' ? 'bg-green-50 text-green-700 border-green-100' :
+                                                'bg-gray-50 text-gray-600'
+                                    }`}>
+                                    {status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {digest.length > 0 ? (
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
